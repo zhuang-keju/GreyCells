@@ -1,0 +1,1261 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: CodingAgent
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/gemini:0.7.2@6e53b92877de2507ce83f2fc32ddf54a9662e4b5ef9e7e5d17bd18153a6485da
+    version: null
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: api_key
+    id: 8bb0dd50-b7f4-4420-9b17-08173e54adaa
+    name: API_KEY
+    selector:
+    - env
+    - API_KEY
+    value: ''
+    value_type: secret
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1766665854400-source-1766666534467-target
+      selected: false
+      source: '1766665854400'
+      sourceHandle: source
+      target: '1766666534467'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: llm
+      id: 1766666534467-source-1766666714696-target
+      selected: false
+      source: '1766666534467'
+      sourceHandle: source
+      target: '1766666714696'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: if-else
+        targetType: loop-end
+      id: 17666823941251-false-1766682485472-target
+      selected: false
+      source: '17666823941251'
+      sourceHandle: 'false'
+      target: '1766682485472'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: if-else
+        targetType: llm
+      id: 17666823941251-true-1766682500741-target
+      selected: false
+      source: '17666823941251'
+      sourceHandle: 'true'
+      target: '1766682500741'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInLoop: false
+        sourceType: loop
+        targetType: end
+      id: 1766681217998-source-1766680328187-target
+      selected: false
+      source: '1766681217998'
+      sourceHandle: source
+      target: '1766680328187'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: http-request
+        targetType: code
+      id: 1766769039651-source-1766769356726-target
+      selected: false
+      source: '1766769039651'
+      sourceHandle: source
+      target: '1766769356726'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: code
+        targetType: if-else
+      id: 1766769356726-source-17666823941251-target
+      selected: false
+      source: '1766769356726'
+      sourceHandle: source
+      target: '17666823941251'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1766666714696-source-17667737781900-target
+      source: '1766666714696'
+      sourceHandle: source
+      target: '17667737781900'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: llm
+        targetType: code
+      id: 1766682500741-source-1766771232701-target
+      source: '1766682500741'
+      sourceHandle: source
+      target: '1766771232701'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: loop-start
+        targetType: code
+      id: 1766681217998start-source-1766774144559-target
+      source: 1766681217998start
+      sourceHandle: source
+      target: '1766774144559'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: code
+        targetType: http-request
+      id: 1766774144559-source-1766769039651-target
+      source: '1766774144559'
+      sourceHandle: source
+      target: '1766769039651'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1766667562386-source-17668141792250-target
+      source: '1766667562386'
+      sourceHandle: source
+      target: '17668141792250'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: loop
+      id: 17668141792250-source-1766681217998-target
+      source: '17668141792250'
+      sourceHandle: source
+      target: '1766681217998'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 17667737781900-source-1766667562386-target
+      source: '17667737781900'
+      sourceHandle: source
+      target: '1766667562386'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: code
+        targetType: if-else
+      id: 1766771232701-source-1766973272745-target
+      source: '1766771232701'
+      sourceHandle: source
+      target: '1766973272745'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: if-else
+        targetType: assigner
+      id: 1766973272745-true-1766682647945-target
+      source: '1766973272745'
+      sourceHandle: 'true'
+      target: '1766682647945'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        sourceType: if-else
+        targetType: assigner
+      id: 1766973272745-7cb1c443-958a-4cbf-b56a-1f5fc8844281-1766973466943-target
+      source: '1766973272745'
+      sourceHandle: 7cb1c443-958a-4cbf-b56a-1f5fc8844281
+      target: '1766973466943'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: 我要一个貪吃蛇游戏
+          hint: ''
+          label: project_requirement
+          max_length: 20000
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: project_requirement
+      height: 108
+      id: '1766665854400'
+      position:
+        x: 0
+        y: 205
+      positionAbsolute:
+        x: 0
+        y: 205
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1766665854400'
+          - project_requirement
+        desc: generate user story
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 2cdd8318-3c97-4b5a-b3e3-cc60043b603f
+          role: system
+          text: "# Role\n你是一个**技术产品经理 (Technical Product Manager)**。\n你的特长是平衡业务需求与技术约束。你负责给开发团队（Coder\
+            \ Agent）和测试团队（Test Agent）输出精准的需求文档。\n\n# Task\n分析用户输入 。\n1.  **识别硬性约束：**\
+            \ 检查用户是否指定了具体的约束，如**数据结构**（如字典、列表）、**变量名**、**函数签名**或**输入输出类型**等。\n2. \
+            \ **填充业务空白：** 对于用户未提及的业务逻辑（如异常处理、边界情况），进行合理的补充和完善。\n3.  **生成文档：** 输出一份既包含业务流程，又严格遵守用户技术指定的需求文档。\n\
+            \n# Critical Rules (The \"Constitution\")\n1.  **技术约束不可侵犯：**\n    * 如果用户说\
+            \ \"输入必须是 `inventory: dict`\"，你**必须**将其列为硬性约束。\n    * **严禁** 修改用户的定义，例如将用户指定的\
+            \ `dict` 类型改为 `class`类型，或修改用户指定的字段名等。\n2.  **业务逻辑要具体：**\n    * 即使技术约束很具体，你依然要描述“逻辑流”。例如用户定义了函数接口，你要补充“库存不足时该函数具体怎么做”。\n\
+            3.  **不要写代码：** 依然保持用自然语言或伪代码描述，不要直接写 Python 实现。\n\n# Output Format (Structured\
+            \ Markdown)\n\n## 1. \U0001F3AF Project Overview\n* **目标：** 一句话概括系统功能。\n\
+            \n## 2. \U0001F510 Technical Constraints (用户指定的技术约束)\n* *注意：仅当用户在输入中明确指定了技术细节时填写此部分。如果用户没说，写\
+            \ \"None (由 Coder 自由发挥)\"。*\n* **数据结构约束：** (例如：User 指定 `orders` 必须是 `List[Dict]`)\n\
+            * **接口签名约束：** (例如：User 指定函数名为 `process_orders`，返回 `tuple`)\n* **字段命名约束：**\
+            \ (例如：必须包含 `qty` 字段)\n* **其他用户自定义的约束：** 用户在需求里提出的约束必须全部写出来，不能遗漏\n\n\n\
+            ## 3. \U0001F30A Business Logic Flow (业务逻辑流)\n* *这是给 Coder 的逻辑伪代码指引。*\n\
+            * *请根据实际逻辑复杂度列出步骤，不限数量。*\n1.  **Step 1:** ...\n2.  **Step 2:** ...\n3.\
+            \  **Step 3:** ...，可以有更多步骤\n\n## 4. ✅ Acceptance Criteria (验收标准)\n* *列出所有必须满足的验收条件，涵盖正常路径和边缘情况。*\
+            \  \n* **AC1:** ... \n* **AC2:** ... \n* **... (Add more as needed)**\n\
+            \n---"
+        - id: d85174cf-ea5b-433e-a040-69785ff3dcd0
+          role: user
+          text: '{{#1766665854400.project_requirement#}}'
+        selected: false
+        structured_output_enabled: false
+        title: user story agent
+        type: llm
+        vision:
+          enabled: false
+      height: 115
+      id: '1766666534467'
+      position:
+        x: 342
+        y: 201
+      positionAbsolute:
+        x: 342
+        y: 201
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1766666534467'
+          - text
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 23f3f79a-727f-4a7d-a66c-aa4218c082dd
+          role: system
+          text: '你是 Coder Agent。请根据用户的user story
+
+            编写完整的、可运行的代码。
+
+            严格遵守以下要求：
+
+            1. 只使用 Python 标准库（除非规范中明确允许第三方库）
+
+            2. 必须是单文件程序
+
+            3. 必须包含清晰的程序入口（if __name__ == "__main__":）
+
+            4. 程序可以直接通过 `python main.py`（或等价方式）运行
+
+            5. 不要实现规范中明确标注为 NON_GOALS 的内容
+
+            输出要求：
+
+            - 只输出完整代码
+
+            - 不要包含任何解释、注释说明或 Markdown 标记
+
+            '
+        - id: 03575f6c-f2a3-4dac-b60e-8e5e99aef5cb
+          role: user
+          text: '{{#1766666534467.text#}}'
+        selected: false
+        title: initial coder
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1766666714696'
+      position:
+        x: 683
+        y: 215
+      positionAbsolute:
+        x: 683
+        y: 215
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1766666534467'
+          - text
+        desc: generate testcase using unittest
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: f17d1b2b-04a4-4b88-867a-0085ea8727e9
+          role: system
+          text: "# Role\n你是一个 Python QA 测试专家。你的任务是为给定的代码编写 `unittest` 测试用例。\n\n# Inputs\n\
+            你拥有以下输入：\n1. **User Story (用户需求)** \n2. **Source Code (业务代码):** - 这是上一步生成的业务逻辑代码。\n\
+            \n# Execution Context (CRITICAL)\n你的测试代码将在一个**共享内存环境**中运行：\n1. **NO IMPORTS:**\
+            \ 假设 `Source Code` 中的函数和类**已经定义在当前环境**中。不要导入任何`Source Code`中的包，直接调用业务函数即可。\n\
+            \   - 例如：如果源代码里定义了 `def add(a,b):`，你的测试里直接写 `add(1, 2)`。\n2. **Library\
+            \ Imports:** 你依然需要导入 `unittest` 和 `unittest.mock`（如果需要）。\n\nRULE: NO MENTAL\
+            \ MATH (禁止心算) When writing assertEqual, DO NOT calculate the expected\
+            \ value yourself. Write the mathematical expression and let Python calculate\
+            \ it.\n❌ Bad: self.assertEqual(result, 27) (You might calculate wrong)\
+            \ ✅ Good: self.assertEqual(result, 12 + (10 - 5) * 3) (Safe & Accurate)\n\
+            \nRULE: CHECK STATE SIDE-EFFECTS (检查状态副作用)\nRead the Source Code to see\
+            \ if a method modifies class attributes (e.g., `self.count -= 1`, `self.data.clear()`,\
+            \ or `self.status = False`).\nIf a method \"consumes\" a resource or changes\
+            \ a status, do not assume you can call it repeatedly with the same result.\n\
+            ❌ Bad: Calling a method in a loop assuming it always returns True (it\
+            \ might have used up a quota or cleared a list).\n✅ Good: If code shows\
+            \ `self.quota -= 1`, your test must handle the case where quota runs out\
+            \ (expect False or Exception).\n\nRULE: MANDATORY THOUGHT TRACE (强制思维链)\n\
+            You are NOT allowed to write the test code directly.\nInside your JSON\
+            \ object, you MUST include a field named `reasoning` **BEFORE** the `content`\
+            \ field.\nIn this `reasoning` field, you must write a short paragraph\
+            \ where you:\n1.  **List State Variables:** Identify variables in Source\
+            \ Code that change (e.g., `self.balance`, `self.inventory`).\n2.  **Trace\
+            \ Side Effects:** Explicitly state what happens to these variables after\
+            \ a method call (e.g., \"After purchase, balance resets to 0\").\n3. \
+            \ **Plan Reset Strategy:** If writing a loop or sequential test, decide\
+            \ when to re-initialize the state by **Simulate Code Execution**. You\
+            \ should simulate code execution as if you are the compiler or interpreter.\n\
+            4. **Evaluate Testcase Outcome:** Use reasoning to derive your steps that\
+            \ leads you to an outcome.\n\n*The quality of your code depends on this\
+            \ analysis.*\n\nRule: Explicit Variable Expansion & Constraint Matching\n\
+            When you use a variable (e.g., total_weight, message_length) as an argument\
+            \ for a function that enforces Strict Input Constraints (e.g., specific\
+            \ allowed values or size limits), you must perform a \"Trace & Verify\"\
+            \ step in your reasoning.\nSteps:\nTrace Value: What is the actual value\
+            \ of the variable in this specific test context?\nVerify: Does this value\
+            \ exist in the function's allowed input list?\nDecompose: If the value\
+            \ is valid logic-wise (e.g., total amount) but invalid structure-wise\
+            \ (e.g., wrong block size), you MUST break it down into a loop or sequence\
+            \ of valid calls.\n❌ BAD Reasoning (Lazy Assumption)\n\"I need to ship\
+            \ the cargo. The variable cargo_weight is 70kg. The function is load_pallet(weight).\
+            \ I will just call load_pallet(cargo_weight).\" (Error: The function might\
+            \ only accept 10kg, 20kg, or 50kg standard pallets, and will reject 70kg.)\n\
+            \n\n\n\n\n# Workflow\n1. **Analyze Code:** 阅读 `Source Code`，提取主函数名或类名（例如\
+            \ `solution` 或 `calculate_tax`）。\n2. **Verify Logic:** 根据 `User Story`\
+            \ 理解预期的输入输出。\n3. **Perform Reasoning (逻辑推演):** 结合 `Source Code` 实现细节进行深度分析，包括但\
+            \ **不限于**： * **State Tracking (状态追踪):** 识别代码中的副作用（Side Effects）。比如：某个方法执行后是否重置了\
+            \ `self.balance` 或清空了列表？ * **Input Validation (边界检查):** 检查代码中的 `if` 条件（如\
+            \ `if x not in [1, 5, 10]`），确保测试输入的合法性。 * **Scenario Simulation (场景模拟):**\
+            \ 在编写代码前，先在脑海中运行一遍循环逻辑，判断第二次迭代是否需要重新初始化资源（如重新投币）。\n\n\n\n4. **Write Tests:**\
+            \ 编写一个继承自 `unittest.TestCase` 的类。\n   - 包含正常情况 (Happy Path)。\n   - 包含边界情况\
+            \ (Edge Cases)。\n\n# Output Format (JSON)\n请输出且仅输出一个 JSON 列表，代表你的所有测试文件，列表里的每个json\
+            \ object代表一个测试文件。即使你觉得只需要一个测试文件，也要用json列表来包装\n\n格式要求：\n[\n  {\n      \"\
+            reasoning\": \"### Analytical walkthrough for 'MarkdownParser':\\n\\n1.\
+            \ **Logic Flow & Edge Cases:**\\n   - I noticed the `parse_line(text)`\
+            \ method behaves differently based on the `in_code_block` boolean flag.\\\
+            n   - **Observation:** If `text` starts with '```', it toggles the flag.\
+            \ \\n   - **Testing Implication:** I cannot just test a header line (`#\
+            \ Title`) in isolation. I must create a test sequence: Open code block\
+            \ -> Insert header (should NOT be parsed as header) -> Close code block\
+            \ -> Insert header (Should be parsed).\\n\\n2. **Input Validation Constraints:**\\\
+            n   - The code specifically checks `if len(text) > 1000: raise ValueError`.\\\
+            n   - **Strategy:** My test cases must respect this limit. I will generate\
+            \ a string of length 1001 to verify the crash, but for functional tests,\
+            \ I must keep inputs short.\\n\\n3. **Hidden Dependencies:**\\n   - The\
+            \ `get_html()` output depends on the order of calls. It's an append-only\
+            \ buffer.\\n   - **Correction:** I shouldn't assert `get_html()` equals\
+            \ a specific string unless I've tracked the exact sequence of previous\
+            \ calls. Better to test `assertIn` for specific fragments.\",\n    \"\
+            filename\": \"test.py\",\n    \"suffix\": \"py\",\n    \"content\": \"\
+            import unittest\\n\\nclass TestSolution(unittest.TestCase):\\n    def\
+            \ test_case_1(self):\\n        # 直接调用函数，无需导入\\n        self.assertEqual(solution(1,\
+            \ 2), 3)\",\n    \"type\": \"test\"\n  }\n]\n\nConstraints:\n不要包含 Markdown\
+            \ 代码块标记（如 ```python）。\n确保 JSON 格式合法。\n不要使用 if __name__ == '__main__':。\n\
+            [JSON Formatting Rules]\nNO UNESCAPED QUOTES: If you need to quote something\
+            \ inside the reasoning text, use Single Quotes (') or **Backticks ()**.\
+            \ Never use Double Quotes (\") inside the JSON value unless they are escaped\
+            \ (\"`).\nBad: \"reasoning\": \"I set the value to \"\" empty string\"\
+            \nGood: \"reasoning\": \"I set the value to '' empty string\"\nGood: \"\
+            reasoning\": \"I set the value to \"\" empty string\""
+        - id: 528fe4bd-2f88-40b0-8c79-af53c90543ae
+          role: user
+          text: '**User Story**: {{#1766666534467.text#}}
+
+            **Source Code**: {{#17667737781900.current_code#}}'
+        selected: false
+        title: testcase agent
+        type: llm
+        vision:
+          enabled: false
+      height: 115
+      id: '1766667562386'
+      position:
+        x: 1365
+        y: 201
+      positionAbsolute:
+        x: 1365
+        y: 201
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        outputs:
+        - value_selector:
+          - '1766681217998'
+          - current_code
+          value_type: string
+          variable: output
+        selected: false
+        title: 输出
+        type: end
+      height: 87
+      id: '1766680328187'
+      position:
+        x: 5240
+        y: 215
+      positionAbsolute:
+        x: 5240
+        y: 215
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        break_conditions: []
+        error_handle_mode: terminated
+        height: 518
+        logical_operator: and
+        loop_count: 3
+        loop_variables:
+        - id: 830d1fc9-96bc-4ba1-b05b-9f2ab4e2cae9
+          label: current_code
+          value:
+          - '17667737781900'
+          - current_code
+          value_type: variable
+          var_type: string
+        - id: b69e4f08-ee66-49e7-af2c-4845110025ed
+          label: current_testcase
+          value:
+          - '17668141792250'
+          - current_testcase
+          value_type: variable
+          var_type: string
+        selected: false
+        start_node_id: 1766681217998start
+        title: 循环
+        type: loop
+        width: 3093
+      height: 518
+      id: '1766681217998'
+      position:
+        x: 2047
+        y: 0
+      positionAbsolute:
+        x: 2047
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 3093
+      zIndex: 1
+    - data:
+        desc: ''
+        isInLoop: true
+        selected: false
+        title: ''
+        type: loop-start
+      draggable: false
+      height: 48
+      id: 1766681217998start
+      parentId: '1766681217998'
+      position:
+        x: 60
+        y: 173
+      positionAbsolute:
+        x: 2107
+        y: 173
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-loop-start
+      width: 44
+      zIndex: 1002
+    - data:
+        author: Zhuang Keju
+        desc: ''
+        height: 88
+        selected: false
+        showAuthor: true
+        text: ''
+        theme: blue
+        title: ''
+        type: ''
+        width: 240
+      height: 88
+      id: '1766681921022'
+      position:
+        x: 878.4648134797859
+        y: 615.3529237451298
+      positionAbsolute:
+        x: 878.4648134797859
+        y: 615.3529237451298
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-note
+      width: 240
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: 8fe66ca4-5c80-4bf3-a797-56faa5c10819
+            value: false
+            varType: boolean
+            variable_selector:
+            - '1766769356726'
+            - is_pass
+          id: 'true'
+          logical_operator: and
+        isInLoop: true
+        selected: false
+        title: 条件分支 (1)
+        type: if-else
+      height: 123
+      id: '17666823941251'
+      parentId: '1766681217998'
+      position:
+        x: 1147
+        y: 135
+      positionAbsolute:
+        x: 3194
+        y: 135
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+    - data:
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        selected: false
+        title: 退出循环
+        type: loop-end
+      height: 53
+      id: '1766682485472'
+      parentId: '1766681217998'
+      position:
+        x: 1488
+        y: 60
+      positionAbsolute:
+        x: 3535
+        y: 60
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-simple
+      width: 244
+      zIndex: 1002
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-2.5-flash-lite
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 13d78372-655a-4b59-9419-8b54ed53876c
+          role: system
+          text: "Role: You are an expert Python Debugger and Code Arbiter.\nGoal:\
+            \ Analyze the provided Source Code, Test Case, User Story, and Execution\
+            \ Output (Error Logs) to fix the failure.\nDecision Protocol (The Router\
+            \ Logic): You must decide which file contains the root cause of the failure.\n\
+            High Priority (Fix Source Code): Default behavior. If the logic is wrong,\
+            \ the calculation is off, or the output format doesn't match the requirement,\
+            \ fix the Source Code.\nLow Priority (Fix Test Case): ONLY fix the Test\
+            \ Case if:\nThe test uses specific variable names/function calls that\
+            \ do not exist in the source (Hallucination/NameError).\nThe test violates\
+            \ strict constraints defined in the `User Story`.\nThe test expectation\
+            \ is physically impossible or logically flawed.\nConstraint: Do not change\
+            \ the Test Case just to make it pass. Only change it if it is objectively\
+            \ wrong.\nFixing Requirements:\nAnalyze: Think deeply about why it failed.\n\
+            Minimal Changes: Make only the smallest necessary changes to fix the specific\
+            \ error.\nNo Refactoring: Do NOT change the overall architecture or class\
+            \ structure.\nConsistency: Keep entry points (function names, class names)\
+            \ identical.\nConflict Resolution: If BOTH need fixing, choose to fix\
+            \ the TEST CASE first (to establish a correct standard for the next loop).\n\
+            \nOutput Format: You must output a SINGLE JSON Object. Do not output Markdown\
+            \ blocks outside the JSON.\n\n{\n  \"reasoning\": \"Brief analysis of\
+            \ the error. Explicitly state WHY you chose to fix this specific file\
+            \ (e.g., 'The test fails because it tries to call a non-existent function\
+            \ `add` globally, but the source defines it inside `Addition` class.').\"\
+            ,\n  \"target_file\": \"SOURCE\",  // or \"TEST\", only those two.\n \
+            \ \"file_content\": \"The FULL content of the fixed file (Source or Test).\"\
+            \n}\n\nYou may include simple comments noting what have you fixed in the\
+            \ `file_content` field of the JSON, but no extended thinking in comments.\
+            \ all thinking should be indicated in the `reasoning` field.\n\n❌ BAD\
+            \ COMMENTS (Strictly Prohibited): Do not write your \"stream of consciousness\"\
+            \ or \"thinking process\" in comments.\n# I am thinking maybe I should\
+            \ change this loop...\n# Let me try to see if using a stack works better...\n\
+            # Wait, this logic might fail for negative numbers, let me reconsider...\n\
+            # The previous code was 1+1=3, which is wrong. I am trying to find a way\
+            \ to make it 2. Let's try method A...\n✅ GOOD COMMENTS (Allowed): Write\
+            \ comments that explain the outcome or the reason for a specific fix.\n\
+            # Fix: Corrected arithmetic logic (1+1=2).\n# Note: This regex handles\
+            \ nested brackets.\n# Bugfix: Previously, digits were incorrectly treated\
+            \ as multipliers only.\n"
+        - id: 0455c727-fe9a-4571-bbcf-b61af2513067
+          role: user
+          text: '**Source Code**: {{#1766681217998.current_code#}}
+
+
+            **Test Case**: {{#1766681217998.current_testcase#}}
+
+
+            **User Story**: {{#1766666534467.text#}}
+
+
+            **Execution Output**: {{#1766769356726.error_log#}}
+
+
+            '
+        selected: false
+        title: Debugging Agent
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1766682500741'
+      parentId: '1766681217998'
+      position:
+        x: 1488
+        y: 173
+      positionAbsolute:
+        x: 3535
+        y: 173
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: true
+        items:
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1766771232701'
+          - content
+          variable_selector:
+          - '1766681217998'
+          - current_code
+          write_mode: over-write
+        loop_id: '1766681217998'
+        selected: false
+        title: 变量赋值
+        type: assigner
+        version: '2'
+      height: 83
+      id: '1766682647945'
+      parentId: '1766681217998'
+      position:
+        x: 2471
+        y: 302
+      positionAbsolute:
+        x: 4518
+        y: 302
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-325
+            key: ''
+            type: text
+            value: '{{#1766774144559.payload#}}'
+          type: json
+        headers: Authorization:Bearer {{#env.API_KEY#}}
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: Code Exec API
+        type: http-request
+        url: https://vercel-code-runner.vercel.app/api/exec
+        variables: []
+      height: 136
+      id: '1766769039651'
+      parentId: '1766681217998'
+      position:
+        x: 505
+        y: 129
+      positionAbsolute:
+        x: 2552
+        y: 129
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        code: "import json\n\ndef main(exec_output: str) -> dict:\n    # exec_output\
+          \ 是 HTTP 节点输出的 Body 字符串\n    try:\n        result = json.loads(exec_output)\n\
+          \    except:\n        return {\"is_pass\": False, \"error_log\": \"Vercel\
+          \ response parse failed\"}\n\n    # 直接读取 Vercel 返回的布尔值\n    is_pass = result.get(\"\
+          is_pass\", False)\n    \n    # 构造给 Debugger 看的错误日志\n    # 如果失败，重点展示 stderr\
+          \ (unittest 输出) 和 error (堆栈信息)\n    error_log = \"\"\n    if not is_pass:\n\
+          \        error_log = f\"Summary: {result.get('summary')}\\n\"\n        error_log\
+          \ += f\"Details:\\n{result.get('stderr')}\\n\"\n        if result.get('error'):\n\
+          \             error_log += f\"Traceback:\\n{result.get('error')}\"\n   \
+          \ \n    return {\n        \"is_pass\": is_pass,\n        \"error_log\":\
+          \ error_log\n    }"
+        code_language: python3
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        outputs:
+          error_log:
+            children: null
+            type: string
+          is_pass:
+            children: null
+            type: boolean
+        selected: false
+        title: QA Judge
+        type: code
+        variables:
+        - value_selector:
+          - '1766769039651'
+          - body
+          value_type: string
+          variable: exec_output
+      height: 51
+      id: '1766769356726'
+      parentId: '1766681217998'
+      position:
+        x: 826
+        y: 171
+      positionAbsolute:
+        x: 2873
+        y: 171
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        code: "import re\nimport json\n\n\n\ndef safe_json_decode(raw_str):\n    \"\
+          \"\"尝试将提取出的原始字符串(包含转义符)转换为真实字符串\"\"\"\n    try:\n        # 加上引号假装它是独立的 JSON\
+          \ 字符串\n        return json.loads(f'\"{raw_str}\"')\n    except:\n      \
+          \  return raw_str\n\n\ndef remove_trailing_slash(content):\n    # === ✂️\
+          \ 核心清洗区 Start ===\n    \n    # 1. 移除首尾空白\n    content = content.strip()\n\
+          \    \n    # 2. \U0001F525 暴力移除末尾的垃圾字符 /n 或 \\n \n    # 有时候模型会重复写好几个，所以用\
+          \ while 循环删干净\n    while content.endswith(\"/n\") or content.endswith(\"\
+          \\\\n\"):\n        if content.endswith(\"/n\"):\n            content = content[:-2]\n\
+          \        elif content.endswith(\"\\\\n\"):\n            content = content[:-2]\n\
+          \    \n    # 3. 再次移除可能剩下的空白\n    content = content.strip()\n    return content\n\
+          \n\n\ndef regex_decode(text):\n    pair_pattern = (\n        r'\"target_file\"\
+          \\s*:\\s*\"(.*?)(?<!\\\\)\"'   # Group 1: target_file (SOURCE 或 TEST)\n\
+          \        r'.*?'                                  # 忽略中间的杂音 (非贪婪匹配)\n   \
+          \     r'\"file_content\"\\s*:\\s*\"(.*?)(?<!\\\\)\"'  # Group 2: file_content\
+          \ (代码内容)\n    )    \n\n    match = re.search(pair_pattern, text, re.DOTALL)\n\
+          \    \n    if match:\n        # 1. 提取原始字符串 (Raw String)\n        raw_target\
+          \ = match.group(1)\n        raw_content = match.group(2)\n        \n   \
+          \     # 2. 解码转义字符\n        target = safe_json_decode(raw_target)\n     \
+          \   content = safe_json_decode(raw_content)\n        \n        # 3. 二次清洗内容\
+          \ (去除末尾可能的 /n)\n        content = remove_trailing_slash(content)\n     \
+          \   \n        # 4. 返回字典\n        return {\n            \"target\": target,\n\
+          \            \"content\": content\n        }\n\n\n\ndef main(llm_output:\
+          \ str) -> dict:\n    code = llm_output.strip()\n    \n    # ----------------------------------------\n\
+          \    # 1. 尝试剥离 Markdown (```python ... ```)\n    # ----------------------------------------\n\
+          \    # 这里的正则解释：\n    # ```             -> 匹配开头反引号\n    # (?:python|json)?\
+          \ -> 可选的语言标记 (python 或 json)，?:表示不捕获\n    # \\s* -> 吃掉换行符\n    # (.*?) \
+          \          -> 核心捕获组：提取中间的所有代码 (非贪婪)\n    # ```             -> 匹配结尾反引号\n\
+          \    # re.DOTALL       -> 让点号(.)可以匹配换行符，这很关键！\n    pattern = r\"```(?:python|json)?\\\
+          s*(.*?)```\"\n    match = re.search(pattern, code, re.DOTALL | re.IGNORECASE)\n\
+          \    \n    if match:\n        code = match.group(1).strip()\n    \n    #\
+          \ ----------------------------------------\n    # 2. 如果这本身是一段 JSON 字符串（有时候\
+          \ LLM 会把 JSON 包在 Markdown 里）\n    #    我们需要把它解开，只拿里面的 code 字段\n    # ----------------------------------------\n\
+          \n    # 我觉得这一段可以注释掉\n    try:\n        # 尝试解析 JSON\n        data = json.loads(code)\n\
+          \        if isinstance(data, dict) and \"code\" in data:\n            code\
+          \ = data[\"code\"]\n    except json.JSONDecodeError:\n        # 如果不是 JSON，那说明剥离\
+          \ Markdown 后就是纯 Python 代码了，不做处理\n        pass\n\n    # http_body_struct\
+          \ = {\n    #     \"code\": code\n    # }\n    # python打包json，不用dify打包\n\n\
+          \    try:\n        update = json.loads(code)\n    except:\n        update\
+          \ = regex_decode(code)\n        return update\n\n    return {\n        #\
+          \ \"payload\": json.dumps(http_body_struct) ,\n        # 输出变成了字符串：{\"code\"\
+          : \"def ...\"}\n        \"target\": update[\"target_file\"],\n        \"\
+          content\": update[\"file_content\"]\n\n    }"
+        code_language: python3
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        outputs:
+          content:
+            children: null
+            type: string
+          target:
+            children: null
+            type: string
+        selected: false
+        title: Code Cleaner
+        type: code
+        variables:
+        - value_selector:
+          - '1766682500741'
+          - text
+          value_type: string
+          variable: llm_output
+      height: 51
+      id: '1766771232701'
+      parentId: '1766681217998'
+      position:
+        x: 1809
+        y: 191
+      positionAbsolute:
+        x: 3856
+        y: 191
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        code: "import re\nimport json\n\ndef main(llm_output: str) -> dict:\n    code\
+          \ = llm_output.strip()\n    \n    # ----------------------------------------\n\
+          \    # 1. 尝试剥离 Markdown (```python ... ```)\n    # ----------------------------------------\n\
+          \    # 这里的正则解释：\n    # ```             -> 匹配开头反引号\n    # (?:python|json)?\
+          \ -> 可选的语言标记 (python 或 json)，?:表示不捕获\n    # \\s* -> 吃掉换行符\n    # (.*?) \
+          \          -> 核心捕获组：提取中间的所有代码 (非贪婪)\n    # ```             -> 匹配结尾反引号\n\
+          \    # re.DOTALL       -> 让点号(.)可以匹配换行符，这很关键！\n    pattern = r\"```(?:python|json)?\\\
+          s*(.*?)```\"\n    match = re.search(pattern, code, re.DOTALL | re.IGNORECASE)\n\
+          \    \n    if match:\n        code = match.group(1).strip()\n    code =\
+          \ code.strip(\"`\")\n    # ----------------------------------------\n  \
+          \  # 2. 如果这本身是一段 JSON 字符串（有时候 LLM 会把 JSON 包在 Markdown 里）\n    #    我们需要把它解开，只拿里面的\
+          \ code 字段\n    # ----------------------------------------\n\n    # 我觉得这一段可以注释掉\n\
+          \    try:\n        # 尝试解析 JSON\n        data = json.loads(code)\n      \
+          \  if isinstance(data, dict) and \"code\" in data:\n            code = data[\"\
+          code\"]\n    except json.JSONDecodeError:\n        # 如果不是 JSON，那说明剥离 Markdown\
+          \ 后就是纯 Python 代码了，不做处理\n        pass\n\n    http_body_struct = {\n     \
+          \   \"code\": code\n    }\n    # python打包json，不用dify打包\n    return {\n \
+          \       \"current_code\": code\n\n    }"
+        code_language: python3
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        outputs:
+          current_code:
+            children: null
+            type: string
+        selected: false
+        title: Code Cleaner (1)
+        type: code
+        variables:
+        - value_selector:
+          - '1766666714696'
+          - text
+          value_type: string
+          variable: llm_output
+      height: 51
+      id: '17667737781900'
+      position:
+        x: 1024
+        y: 233
+      positionAbsolute:
+        x: 1024
+        y: 233
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        code: "import json\n\ndef main(current_code: str, current_testcase: str) ->\
+          \ dict:\n    # 构造 Payload 字典\n    # 这里可以扩展：如果你以后想传 test_cases，也可以加在这里\n\
+          \    assert current_testcase is not None\n    payload_dict = {\n       \
+          \ \"code\": current_code,\n        \"test\": current_testcase\n    }\n \
+          \   \n    return {\n        \"payload\": json.dumps(payload_dict)\n    }"
+        code_language: python3
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        outputs:
+          payload:
+            children: null
+            type: string
+        selected: false
+        title: payload parser
+        type: code
+        variables:
+        - value_selector:
+          - '1766681217998'
+          - current_code
+          value_type: string
+          variable: current_code
+        - value_selector:
+          - '1766681217998'
+          - current_testcase
+          value_type: string
+          variable: current_testcase
+      height: 51
+      id: '1766774144559'
+      parentId: '1766681217998'
+      position:
+        x: 184
+        y: 171
+      positionAbsolute:
+        x: 2231
+        y: 171
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        code: "import re\nimport json\n\ndef safe_json_decode(raw_str):\n    \"\"\"\
+          尝试将提取出的原始字符串(包含转义符)转换为真实字符串\"\"\"\n    try:\n        # 加上引号假装它是独立的 JSON\
+          \ 字符串\n        return json.loads(f'\"{raw_str}\"')\n    except:\n      \
+          \  return raw_str\n\n\ndef remove_trailing_slash(content):\n    # === ✂️\
+          \ 核心清洗区 Start ===\n    \n    # 1. 移除首尾空白\n    content = content.strip()\n\
+          \    \n    # 2. \U0001F525 暴力移除末尾的垃圾字符 /n 或 \\n \n    # 有时候模型会重复写好几个，所以用\
+          \ while 循环删干净\n    while content.endswith(\"/n\") or content.endswith(\"\
+          \\\\n\"):\n        if content.endswith(\"/n\"):\n            content = content[:-2]\n\
+          \        elif content.endswith(\"\\\\n\"):\n            content = content[:-2]\n\
+          \    \n    # 3. 再次移除可能剩下的空白\n    content = content.strip()\n    return content\n\
+          \ndef regex_decode(text):\n    triplet_pattern = (\n        r'\"filename\"\
+          \\s*:\\s*\"(.*?)(?<!\\\\)\"'  # Group 1: filename\n        r'.*?'      \
+          \                        # Skip garbage\n        r'\"suffix\"\\s*:\\s*\"\
+          (.*?)(?<!\\\\)\"'    # Group 2: suffix\n        r'.*?'                 \
+          \             # Skip garbage\n        r'\"content\"\\s*:\\s*\"(.*?)(?<!\\\
+          \\)\"'   # Group 3: content\n    )\n    \n    matches = re.finditer(triplet_pattern,\
+          \ text, re.DOTALL)\n    \n    final_code = \"\"\n    found_any = False\n\
+          \    \n    for match in matches:\n        found_any = True\n        \n \
+          \       # 提取 raw string\n        raw_fname = match.group(1)\n        raw_suffix\
+          \ = match.group(2)\n        raw_content = match.group(3)\n        \n   \
+          \     # 解码转义字符 (处理 \\n, \\\", \\t 等)\n        fname = safe_json_decode(raw_fname)\n\
+          \        suffix = safe_json_decode(raw_suffix)\n        content = safe_json_decode(raw_content)\n\
+          \        \n        # 二次清洗代码内容\n        content = remove_trailing_slash(content)\n\
+          \        \n        # 拼接\n        # final_code += f\"# File: {fname} (Type:\
+          \ {suffix})\\n\"\n        if suffix == \"py\":\n            final_code +=\
+          \ content + \"\\n\\n\"\n    return final_code.strip()\n    # if not found_any:\n\
+          \        ## 如果彻底匹配失败，返回原文本以便调试\n        # return {\"current_testcase\":\
+          \ \"# EXTRACTION FAILED\\n\" + text}\n\n\n\n\ndef main(llm_output: str)\
+          \ -> dict:\n    code = llm_output.strip()\n    \n    # ----------------------------------------\n\
+          \    # 1. 尝试剥离 Markdown (```python ... ```)\n    # ----------------------------------------\n\
+          \    # 这里的正则解释：\n    # ```             -> 匹配开头反引号\n    # (?:python|json)?\
+          \ -> 可选的语言标记 (python 或 json)，?:表示不捕获\n    # \\s* -> 吃掉换行符\n    # (.*?) \
+          \          -> 核心捕获组：提取中间的所有代码 (非贪婪)\n    # ```             -> 匹配结尾反引号\n\
+          \    # re.DOTALL       -> 让点号(.)可以匹配换行符，这很关键！\n    pattern = r\"```(?:python|json)?\\\
+          s*(.*?)```\"\n    match = re.search(pattern, code, re.DOTALL | re.IGNORECASE)\n\
+          \    \n    if match:\n        code = match.group(1).strip()\n    \n    #\
+          \ ----------------------------------------\n    # 2. 如果这本身是一段 JSON 字符串（有时候\
+          \ LLM 会把 JSON 包在 Markdown 里）\n    #    我们需要把它解开，只拿里面的 code 字段\n    # ----------------------------------------\n\
+          \n    # 我觉得这一段可以注释掉\n    try:\n        # 尝试解析 JSON\n        data = json.loads(code)\n\
+          \        if isinstance(data, dict) and \"code\" in data:\n            code\
+          \ = data[\"code\"]\n    except json.JSONDecodeError:\n        # 如果不是 JSON，那说明剥离\
+          \ Markdown 后就是纯 Python 代码了，不做处理\n        pass\n    try:\n        code =\
+          \ json.loads(code)\n    except:\n        regex_decode_result = regex_decode(code)\n\
+          \        return {\"current_testcase\":\n        regex_decode_result}\n\n\
+          \    if isinstance(code, dict):\n        code = [code]\n    code_extracted\
+          \ = \"\"\n    for obj in code:\n        if obj[\"suffix\"] == \"py\":\n\
+          \            obj_code = obj[\"content\"]\n            obj_code = remove_trailing_slash(obj_code)\n\
+          \            code_extracted += obj_code + \"\\n\"\n\n    # python打包json，不用dify打包\n\
+          \    return {\n        \"current_testcase\": code_extracted\n\n    }"
+        code_language: python3
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        outputs:
+          current_testcase:
+            children: null
+            type: string
+        selected: false
+        title: Code Cleaner (2)
+        type: code
+        variables:
+        - value_selector:
+          - '1766667562386'
+          - text
+          value_type: string
+          variable: llm_output
+      height: 51
+      id: '17668141792250'
+      position:
+        x: 1706
+        y: 233
+      positionAbsolute:
+        x: 1706
+        y: 233
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: fb5e66af-2bc5-44e0-a486-418932ff5179
+            value: SOURCE
+            varType: string
+            variable_selector:
+            - '1766771232701'
+            - target
+          id: 'true'
+          logical_operator: and
+        - case_id: 7cb1c443-958a-4cbf-b56a-1f5fc8844281
+          conditions:
+          - comparison_operator: is
+            id: 3d7fac5d-c700-496b-9ac0-77ecce05f7d7
+            value: TEST
+            varType: string
+            variable_selector:
+            - '1766771232701'
+            - target
+          logical_operator: and
+        isInIteration: false
+        isInLoop: true
+        loop_id: '1766681217998'
+        selected: false
+        title: 条件分支 2
+        type: if-else
+      height: 171
+      id: '1766973272745'
+      parentId: '1766681217998'
+      position:
+        x: 2130
+        y: 131
+      positionAbsolute:
+        x: 4177
+        y: 131
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: true
+        items:
+        - input_type: variable
+          operation: over-write
+          value:
+          - '1766771232701'
+          - content
+          variable_selector:
+          - '1766681217998'
+          - current_testcase
+          write_mode: over-write
+        loop_id: '1766681217998'
+        selected: false
+        title: 变量赋值 2
+        type: assigner
+        version: '2'
+      height: 83
+      id: '1766973466943'
+      parentId: '1766681217998'
+      position:
+        x: 2471
+        y: 133
+      positionAbsolute:
+        x: 4518
+        y: 133
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 1002
+    viewport:
+      x: -1411.900961471774
+      y: 196.5566824682303
+      zoom: 0.5352673998912678
+  rag_pipeline_variables: []
