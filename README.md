@@ -47,19 +47,3 @@ python coding_agent.py "写一个贪吃蛇游戏，使用命令行界面，WASD�
 
 *   `output/main.py`: 最终的业务代码
 *   `output/test_generated.py`: 最终通过的测试用例
-
----
-
-## 常见问题排查
-
-**Q: `urllib.error.HTTPError: HTTP Error 400: Bad Request`**
-*   **原因**: 通常是 API Key 无效，或者 Model 名称填写错误。
-*   **解决**: 检查 `LLM_API_KEY` 是否正确，确保该 Key 有权限访问 `LLM_MODEL` 指定的模型。
-
-**Q: 程序在 "Executing & Testing..." 卡住很久**
-*   **原因**: 生成的代码可能包含死循环。
-*   **解决**: 代码执行器内置了 30 秒超时机制。如果超过 30 秒，程序会自动判定为失败并进入 Debug 流程。
-
-**Q: Debug Agent 没有修复代码**
-*   **原因**: 可能是 LLM 输出格式不符合 JSON 要求，或者逻辑过于复杂超出模型能力。
-*   **解决**: 尝试更换更强的模型（如 `gemini-1.5-pro`），或者简化需求描述。
