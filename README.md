@@ -1,5 +1,5 @@
 
-# Coding Agent (YAML Implementation)
+# Coding Agent
 
 这是一个基于 Dify Workflow 设计的硬编码 Coding Agent。它通过多 Agent 协作循环（PM -> Coder -> Tester -> Executor -> Debugger）来自动生成高质量的 Python 代码。
 
