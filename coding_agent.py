@@ -10,14 +10,30 @@ import urllib.request
 import urllib.error
 from typing import Dict, Any, Tuple, Optional
 
+
+
+from e2b_code_interpreter import Sandbox
+from dotenv import load_dotenv
+
+
+
 # ============================================================================
 # Configuration & Constants
 # ============================================================================
+
+load_dotenv()
 
 DEFAULT_MODEL = "gemini-2.0-flash"  # Default if env var not set
 API_KEY_ENV = "LLM_API_KEY"
 PROVIDER_ENV = "LLM_PROVIDER"
 MODEL_ENV = "LLM_MODEL"
+E2B_API_KEY = os.environ.get("E2B_API_KEY")
+
+if not E2B_API_KEY:
+    print("❌ 警告：未找到 E2B_API_KEY")
+else:
+    print("✅ E2B Key 已加载")
+
 
 # ============================================================================
 # LLM Client (Gemini REST API)
@@ -194,58 +210,53 @@ def execute_code(source_code: str, test_code: str) -> Dict[str, Any]:
     Simulates the Vercel Code Runner.
     Writes code to temp files and runs unittest.
     """
-    workspace_dir = "workspace_exec"
-    if not os.path.exists(workspace_dir):
-        os.makedirs(workspace_dir)
-        
-    # Write Main Code
-    with open(os.path.join(workspace_dir, "main.py"), "w", encoding="utf-8") as f:
-        f.write(source_code)
-        
-    # Write Test Code
-    # INJECT: 'from main import *' to allow tests to see the code without imports in LLM output
-    test_file_content = "import unittest\nfrom main import *\n\n" + test_code
-    with open(os.path.join(workspace_dir, "test_generated.py"), "w", encoding="utf-8") as f:
-        f.write(test_file_content)
-        
-    # Execute
-    cmd = [sys.executable, "-m", "unittest", "-v", "test_generated.py"]
-    
-    try:
-        # Run process
-        result = subprocess.run(
-            cmd, 
-            cwd=workspace_dir,
-            capture_output=True,
-            text=True,
-            timeout=30 # 30 seconds timeout
-        )
-        
-        is_pass = result.returncode == 0
-        stderr = result.stderr
-        stdout = result.stdout
-        
-        return {
-            "is_pass": is_pass,
-            "stderr": stderr,
-            "stdout": stdout,
-            "error": "" if is_pass else "Tests failed"
-        }
-        
-    except subprocess.TimeoutExpired:
-        return {
-            "is_pass": False,
-            "stderr": "Execution Timed Out (30s)",
-            "stdout": "",
-            "error": "Timeout"
-        }
-    except Exception as e:
-        return {
-            "is_pass": False,
-            "stderr": str(e),
-            "stdout": "",
-            "error": "Execution Error"
-        }
+
+    with Sandbox.create(api_key=E2B_API_KEY) as sandbox:
+        print("🚀 沙箱已启动...")
+
+        sandbox.files.write("main.py", source_code)
+        print("✅ 文件 main.py 已写入沙箱")
+
+        test_file_content = "import unittest\nfrom main import *\n\n" + test_code
+
+        sandbox.files.write("test.py", test_file_content)
+        print("✅ 文件 test.py 已写入沙箱")
+
+        # proc = sandbox.commands.run("python test.py")
+
+        # 3. 执行代码 (替代 subprocess 的部分)
+        # 注意：timeout 参数直接在这里设置，单位是秒
+        try:
+            proc = sandbox.commands.run("python test.py", timeout=30)
+            
+            # E2B 的 proc 对象直接提供了 exit_code, stdout, stderr
+            is_pass = proc.exit_code == 0
+            
+            return {
+                "is_pass": is_pass,
+                "stderr": proc.stderr,
+                "stdout": proc.stdout,
+                # 如果测试通过，error 为空；否则提示 Failed
+                "error": "" if is_pass else "Tests failed"
+            }
+
+        except TimeoutError:
+            # E2B 内部超时会抛出 TimeoutError
+            return {
+                "is_pass": False,
+                "stderr": "Execution Timed Out (30s)",
+                "stdout": "",
+                "error": "Timeout"
+            }
+        except Exception as e:
+            # 捕获执行过程中的其他错误（如沙箱内部崩溃等）
+            return {
+                "is_pass": False,
+                "stderr": str(e),
+                "stdout": "",
+                "error": "Execution Error during run"
+            }
+
 
 def qa_judge(exec_result: Dict[str, Any]) -> Tuple[bool, str]:
     """Logic from 'QA Judge' node."""

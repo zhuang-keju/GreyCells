@@ -1,0 +1,2 @@
+python-dotenv
+e2b
