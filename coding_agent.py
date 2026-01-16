@@ -125,19 +125,53 @@ def extract_markdown_code(text: str) -> str:
         return match.group(1).strip()
     return text
 
-def cleaner_source_code(llm_output: str) -> str:
+def cleaner_source_code(llm_output: str) -> dict:
     """Logic from 'Code Cleaner (1)' node."""
     code = extract_markdown_code(llm_output)
     
-    # Try to unwrap if it's a JSON wrapper (sometimes LLMs wrap code in JSON)
+    # # Try to unwrap if it's a JSON wrapper (sometimes LLMs wrap code in JSON)
+    # try:
+    #     data = json.loads(code)
+    #     if isinstance(data, dict) and "code" in data:
+    #         return data["code"]
+    # except json.JSONDecodeError:
+    #     pass
+    # return code.strip("`")
+
     try:
+        # Try pure JSON load first
         data = json.loads(code)
-        if isinstance(data, dict) and "code" in data:
-            return data["code"]
-    except json.JSONDecodeError:
-        pass
+    except:
+        # If strict JSON fails, try the regex decode fallback from YAML
+        # (Simplified here to just look for content pattern as the regex in YAML was complex)
+        # However, for robustness, let's assume the LLM follows instructions reasonably well
+        # or that we can fix simple JSON errors.
+        print("  [Cleaner] Warning: JSON decode failed for [source code], trying simple extraction...")
+        # Fallback: simple text extraction if it looks like code
+        if "class " in code:
+            print("returning original code")
+            return {"code":code, "packages":[]}
+        print("returning error")
+        return {"code":"# Error parsing test case JSON","packages": []}
+
+    if isinstance(data, dict):
+        data = [data]
         
-    return code.strip("`")
+    extracted_code = ""
+    packages = []
+    if isinstance(data, list):
+        for obj in data:
+            if obj.get("suffix") == "py":
+                packages += obj.get("packages", [])
+                obj_code = obj.get("content", "")
+                obj_code = remove_trailing_slash(obj_code)
+                extracted_code += obj_code + "\n\n"
+    
+    return {"code": extracted_code.strip(),
+            "packages": packages}
+
+
+
 
 def cleaner_test_case(llm_output: str) -> str:
     """Logic from 'Code Cleaner (2)' node."""
@@ -205,7 +239,7 @@ def cleaner_debug_agent(llm_output: str) -> Dict[str, str]:
 # Tool: Code Execution (Subprocess)
 # ============================================================================
 
-def execute_code(source_code: str, test_code: str) -> Dict[str, Any]:
+def execute_code(source_code: dict, test_code: str) -> Dict[str, Any]:
     """
     Simulates the Vercel Code Runner.
     Writes code to temp files and runs unittest.
@@ -214,7 +248,15 @@ def execute_code(source_code: str, test_code: str) -> Dict[str, Any]:
     with Sandbox.create(api_key=E2B_API_KEY) as sandbox:
         print("🚀 沙箱已启动...")
 
-        sandbox.files.write("main.py", source_code)
+        packages = source_code["packages"]
+
+        if packages:
+            package_str = " ".join(packages)
+            print(f"installing {package_str}")
+            install_cmd = f"pip install {package_str}"
+            sandbox.commands.run(install_cmd, timeout=120)
+
+        sandbox.files.write("main.py", source_code["code"])
         print("✅ 文件 main.py 已写入沙箱")
 
         test_file_content = "import unittest\nfrom main import *\n\n" + test_code
@@ -227,7 +269,7 @@ def execute_code(source_code: str, test_code: str) -> Dict[str, Any]:
         # 3. 执行代码 (替代 subprocess 的部分)
         # 注意：timeout 参数直接在这里设置，单位是秒
         try:
-            proc = sandbox.commands.run("python test.py", timeout=30)
+            proc = sandbox.commands.run("python -m unittest test.py", timeout=30)
             
             # E2B 的 proc 对象直接提供了 exit_code, stdout, stderr
             is_pass = proc.exit_code == 0
@@ -281,29 +323,51 @@ PROMPT_PM_SYSTEM = """# Role
 
 # Task
 分析用户输入 。
-1.  **识别硬性约束：** 检查用户是否指定了具体的约束，如**数据结构**（如字典、列表）、**变量名**、**函数签名**或**输入输出类型**等。
-2.  **填充业务空白：** 对于用户未提及的业务逻辑（如异常处理、边界情况），进行合理的补充和完善。
-3.  **生成文档：** 输出一份既包含业务流程，又严格遵守用户技术指定的需求文档。
+1.  **项目诊断 (Project Diagnosis):** 分析交互模式（批处理 vs 实时交互）和资源限制（IO密集 vs CPU密集），并在内心推导隐含的技术要求。
+2.  **识别硬性约束：** 检查用户是否指定了具体的约束，如**数据结构**（如字典、列表）、**变量名**、**函数签名**或**输入输出类型**等。
+3.  **填充业务空白：** 对于用户未提及的业务逻辑（如异常处理、边界情况），进行合理的补充和完善。
+4.  **生成文档：** 输出一份既包含业务流程，又严格遵守用户技术指定的需求文档。
 
 # Critical Rules (The "Constitution")
 1.  **技术约束不可侵犯：**
     * 如果用户说 "输入必须是 `inventory: dict`"，你**必须**将其列为硬性约束。
     * **严禁** 修改用户的定义，例如将用户指定的 `dict` 类型改为 `class`类型，或修改用户指定的字段名等。
-2.  **业务逻辑要具体：**
+2.  **隐性约束显性化 (Enforce Implicit Constraints):**
+    * 你的 `<analysis>` 步骤是唯一的架构权威。如果在 `<analysis>` 中识别出了风险（例如 "Blocking I/O" 或 "Slow Network"），你**必须**在文档的 "Architecturally Derived" 章节将其转化为**强制命令**。
+    * **语气要求：** 严禁使用建议性语气（如 "consider using", "recommended"）。**必须**使用命令性语气（如 "MUST implement", "STRICTLY PROHIBITED"）。
+    * *例子：* 不要写 "建议使用多线程"，要写 "**Constraint:** System MUST use `threading` or `asyncio` to handle concurrent requests."
+3.  **业务逻辑要具体：**
     * 即使技术约束很具体，你依然要描述“逻辑流”。例如用户定义了函数接口，你要补充“库存不足时该函数具体怎么做”。
-3.  **不要写代码：** 依然保持用自然语言或伪代码描述，不要直接写 Python 实现。
+4.  **不要写代码：** 依然保持用自然语言或伪代码描述，不要直接写 Python 实现。
 
 # Output Format (Structured Markdown)
+
+!!! IMPORTANT: Thinking Process !!!
+在生成 Markdown 文档之前，请先输出一个 XML 块 `<analysis>...</analysis>`，在其中分析：
+1. **Interaction Pattern:** (Batch / Real-time / Request-Response)
+2. **Implied Risks:** (e.g., Blocking I/O, Race Conditions, Memory leaks)
+3. **Derived Constraints:** (e.g., "Must use `select` or `threading` for input")
+!!! End Thinking Process !!!
+
 
 ## 1. 🎯 Project Overview
 * **目标：** 一句话概括系统功能。
 
 ## 2. 🔐 Technical Constraints (用户指定的技术约束)
+### 2.1 User-Specified (用户指定)
 * *注意：仅当用户在输入中明确指定了技术细节时填写此部分。如果用户没说，写 "None (由 Coder 自由发挥)"。*
 * **数据结构约束：** (例如：User 指定 `orders` 必须是 `List[Dict]`)
 * **接口签名约束：** (例如：User 指定函数名为 `process_orders`，返回 `tuple`)
 * **字段命名约束：** (例如：必须包含 `qty` 字段)
 * **其他用户自定义的约束：** 用户在需求里提出的约束必须全部写出来，不能遗漏
+
+### 2.2 Architecturally Derived (架构推导)
+* *警告：必须根据上方的 `<analysis>` 块自动填充此部分。*
+* *将 `<Derived_Constraints>` 中的每一条，转化为强制性的技术约束。*
+* *基于项目类型推导出的隐性约束（由 PM 负责填补）。*
+* **交互模型约束：** (例如：针对 CLI 游戏，必须注明 "Implement non-blocking keyboard input loop")
+* **环境/库约束：** (例如：仅使用 Python 标准库)
+* **状态管理：** (例如：不允许不可逆的状态转移)
 
 ## 3. 🌊 Business Logic Flow (业务逻辑流)
 * *这是给 Coder 的逻辑伪代码指引。*
@@ -324,15 +388,36 @@ PROMPT_CODER_SYSTEM = """你是 Coder Agent。请根据用户的user story
 编写完整的、可运行的代码。
 
 严格遵守以下要求：
-1. 只使用 Python 标准库（除非规范中明确允许第三方库）
+1. 合理选择库：优先使用 Python 标准库。如果任务需要（如异步请求、数据分析），允许并鼓励使用成熟的第三方库（如 aiohttp, pandas），并务必在 packages 字段中声明。
 2. 必须是单文件程序
 3. 必须包含清晰的程序入口（if __name__ == "__main__":）
 4. 程序可以直接通过 `python main.py`（或等价方式）运行
 5. 不要实现规范中明确标注为 NON_GOALS 的内容
 
-输出要求：
-- 只输出完整代码
-- 不要包含任何解释、注释说明或 Markdown 标记
+# Output Format (JSON)
+请输出且仅输出一个 JSON 列表，代表你的所有代码文件，列表里的每个json object代表一个代码文件。
+尽管Output Format要求JSON列表，但根据要求里的必须是单文件，列表里应该只包含一个文件。尽管必须是单文件，你也必须用json列表来包装。
+
+格式要求：
+[
+  {
+    "reasoning": "...",
+    "filename": "main.py", // 必须单文件，名字固定main.py
+    "suffix": "py",
+    "content": "...",
+    "packages": ["package1", "package2", ...], // python package，可以使用pip安装的包
+    "dependencies": "", // 这一项描述项目级别的文件依赖。由于要求是单文件，这里不需要写任何dependency
+    "type": "code"
+  }
+]
+
+Constraints:
+不要包含 Markdown 代码块标记（如 ```python）。
+确保 JSON 格式合法。
+[JSON Formatting Rules]
+NO UNESCAPED QUOTES: If you need to quote something inside the reasoning text, use Single Quotes (') or **Backticks ()**. Never use Double Quotes (") inside the JSON value unless they are escaped (\\").
+
+
 """
 
 PROMPT_TESTCASE_SYSTEM = """# Role
@@ -392,7 +477,7 @@ Decompose: If the value is valid logic-wise (e.g., total amount) but invalid str
 格式要求：
 [
   {
-      "reasoning": "...",
+    "reasoning": "...",
     "filename": "test.py",
     "suffix": "py",
     "content": "import unittest\\n\\nclass TestSolution(unittest.TestCase):\\n    def test_case_1(self):\\n        # 直接调用函数，无需导入\\n        self.assertEqual(solution(1, 2), 3)",
@@ -462,19 +547,27 @@ def main():
     # 1. PM Agent
     print("🤖 [PM Agent] Analyzing requirements...")
     pm_response = call_llm(PROMPT_PM_SYSTEM, user_requirement)
+    with open("pm.txt", "w", encoding="utf-8") as f:
+        f.write(pm_response)
     user_story = pm_response
     print("✅ User Story Generated.\n")
     
     # 2. Initial Coder
     print("👨‍💻 [Initial Coder] Writing code...")
     coder_response = call_llm(PROMPT_CODER_SYSTEM, user_story)
+    with open("coder.txt", "w", encoding="utf-8") as f:
+        f.write(coder_response)
+
     current_code = cleaner_source_code(coder_response)
     print("✅ Initial Code Generated.\n")
 
     # 3. Testcase Agent
     print("🧪 [Testcase Agent] Generating tests...")
-    test_user_prompt = f"**User Story**: {user_story}\n**Source Code**: {current_code}"
+    test_user_prompt = f"**User Story**: {user_story}\n**Source Code**: {current_code['code']}"
     test_response = call_llm(PROMPT_TESTCASE_SYSTEM, test_user_prompt)
+    with open("test.txt", "w", encoding="utf-8") as f:
+        f.write(test_response)
+
     current_testcase = cleaner_test_case(test_response)
     print("✅ Test Cases Generated.\n")
     
@@ -495,6 +588,7 @@ def main():
             break
         else:
             print("❌ [QA Judge] Tests Failed.")
+            print(exec_result)
             print(f"   Error Summary: {error_log.splitlines()[0] if error_log else 'Unknown'}")
             
             if loop_count == max_loops:
@@ -504,12 +598,15 @@ def main():
             # 5. Debug Agent
             print("🔧 [Debug Agent] Analyzing failure...")
             debug_prompt = (
-                f"**Source Code**: {current_code}\n\n"
+                f"**Source Code**: {current_code['code']}\n\n"
                 f"**Test Case**: {current_testcase}\n\n"
                 f"**User Story**: {user_story}\n\n"
                 f"**Execution Output**: {error_log}\n"
             )
             debug_response = call_llm(PROMPT_DEBUG_SYSTEM, debug_prompt)
+            with open(f"debug_{loop_count}.txt", "w", encoding="utf-8") as f:
+                f.write(debug_response)
+
             debug_fix = cleaner_debug_agent(debug_response)
             
             target = debug_fix.get("target_file")
@@ -517,7 +614,7 @@ def main():
             
             if target == "SOURCE":
                 print("🛠️  Fixing Source Code...")
-                current_code = content
+                current_code = {"code":content, "packages": current_code["packages"]}
             elif target == "TEST":
                 print("🛠️  Fixing Test Case...")
                 current_testcase = content
@@ -529,12 +626,20 @@ def main():
     output_dir = "output"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-        
+
+
     final_main_path = os.path.join(output_dir, "main.py")
     final_test_path = os.path.join(output_dir, "test_generated.py")
-    
+
+    if current_code['packages']:
+        print("Writing requirements.txt")
+        final_requirement_path = os.path.join(output_dir, "requirements.txt")
+        with open(final_requirement_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(current_code['packages']))
+
+
     with open(final_main_path, "w", encoding="utf-8") as f:
-        f.write(current_code)
+        f.write(current_code["code"])
         
     with open(final_test_path, "w", encoding="utf-8") as f:
         f.write(f"import unittest\nfrom main import *\n\n{current_testcase}")
