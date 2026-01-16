@@ -77,21 +77,20 @@ PROMPT_CODER_SYSTEM = """你是 Coder Agent。请根据用户的user story
 5. 不要实现规范中明确标注为 NON_GOALS 的内容
 
 # Output Format (JSON)
-请输出且仅输出一个 JSON 列表，代表你的所有代码文件，列表里的每个json object代表一个代码文件。
-尽管Output Format要求JSON列表，但根据要求里的必须是单文件，列表里应该只包含一个文件。尽管必须是单文件，你也必须用json列表来包装。
+请输出且仅输出一个 JSON object，代表一个代码文件。
 
 格式要求：
-[
-  {
-    "reasoning": "...",
-    "filename": "main.py", // 必须单文件，名字固定main.py
-    "suffix": "py",
-    "content": "...",
-    "packages": ["package1", "package2", ...], // python package，可以使用pip安装的包
-    "dependencies": "", // 这一项描述项目级别的文件依赖。由于要求是单文件，这里不需要写任何dependency
-    "type": "code"
-  }
-]
+
+{
+  "reasoning": "...",
+  "filename": "main.py", // 必须单文件，名字固定main.py
+  "suffix": "py",
+  "content": "...",
+  "packages": ["package1", "package2", ...], // python package，可以使用pip安装的包
+  "dependencies": "", // 这一项描述项目级别的文件依赖。由于要求是单文件，这里不需要写任何dependency
+  "type": "code" // 保留字段，固定为 code
+}
+
 
 Constraints:
 不要包含 Markdown 代码块标记（如 ```python）。
@@ -154,18 +153,17 @@ Decompose: If the value is valid logic-wise (e.g., total amount) but invalid str
    - 包含边界情况 (Edge Cases)。
 
 # Output Format (JSON)
-请输出且仅输出一个 JSON 列表，代表你的所有测试文件，列表里的每个json object代表一个测试文件。即使你觉得只需要一个测试文件，也要用json列表来包装
+请输出且仅输出一个 JSON object，代表对当前`Source Code`的测试文件。
 
 格式要求：
-[
-  {
-    "reasoning": "...",
-    "filename": "test.py",
-    "suffix": "py",
-    "content": "import unittest\\n\\nclass TestSolution(unittest.TestCase):\\n    def test_case_1(self):\\n        # 直接调用函数，无需导入\\n        self.assertEqual(solution(1, 2), 3)",
-    "type": "test"
-  }
-]
+
+{
+  "reasoning": "...",
+  "filename": "test.py",
+  "suffix": "py",
+  "content": "import unittest\\n\\nclass TestSolution(unittest.TestCase):\\n    def test_case_1(self):\\n        # 直接调用函数，无需导入\\n        self.assertEqual(solution(1, 2), 3)",
+  "type": "test"
+}
 
 Constraints:
 不要包含 Markdown 代码块标记（如 ```python）。

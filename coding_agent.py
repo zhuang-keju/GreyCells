@@ -125,19 +125,68 @@ def extract_markdown_code(text: str) -> str:
         return match.group(1).strip()
     return text
 
+
+
+
+# extract one json object only
+def extract_json_regex(text: str, schema: Dict[str, str]) -> Dict[str, Any]:
+    """
+    基于预定义类型的通用正则提取器。
+    
+    Args:
+        text: LLM 返回的原始文本
+        schema: 字段名到类型的映射，支持 'string', 'list', 'bool'
+                例如: {"filename": "string", "packages": "list"}
+    
+    Returns:
+        提取到的数据字典。未匹配到的字段将根据类型返回默认值 (空字符串或空列表)。
+    """
+    result = {}
+    
+    for field, field_type in schema.items():
+        if field_type == "string":
+            # 匹配字符串: "key": "value"
+            # (?<!\\)" 确保不匹配转义的引号
+            pattern = fr'"{field}"\s*:\s*"(.*?)(?<!\\)"'
+            match = re.search(pattern, text, re.DOTALL)
+            if match:
+                result[field] = safe_json_decode(match.group(1))
+            else:
+                result[field] = ""
+                
+        elif field_type == "list":
+            # 匹配列表: "key": [...]
+            # (.*?) 非贪婪匹配直到遇到闭合的 ]
+            pattern = fr'"{field}"\s*:\s*\[(.*?)\]'
+            match = re.search(pattern, text, re.DOTALL)
+            if match:
+                raw_content = match.group(1)
+                # 提取列表内的所有字符串项 (支持双引号和单引号)
+                items = re.findall(r'["\']([^"\']+)["\']', raw_content)
+                # 对每一项进行解码
+                result[field] = [safe_json_decode(item) for item in items]
+            else:
+                result[field] = []
+
+        elif field_type == "bool":
+            # 匹配布尔值: "key": true/false
+            pattern = fr'"{field}"\s*:\s*(true|false)'
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                result[field] = match.group(1).lower() == "true"
+            else:
+                result[field] = False # 默认值
+                
+    return result
+
+
+
+
+
 def cleaner_source_code(llm_output: str) -> dict:
     """Logic from 'Code Cleaner (1)' node."""
     code = extract_markdown_code(llm_output)
     
-    # # Try to unwrap if it's a JSON wrapper (sometimes LLMs wrap code in JSON)
-    # try:
-    #     data = json.loads(code)
-    #     if isinstance(data, dict) and "code" in data:
-    #         return data["code"]
-    # except json.JSONDecodeError:
-    #     pass
-    # return code.strip("`")
-
     try:
         # Try pure JSON load first
         data = json.loads(code)
@@ -146,29 +195,20 @@ def cleaner_source_code(llm_output: str) -> dict:
         # (Simplified here to just look for content pattern as the regex in YAML was complex)
         # However, for robustness, let's assume the LLM follows instructions reasonably well
         # or that we can fix simple JSON errors.
-        print("  [Cleaner] Warning: JSON decode failed for [source code], trying simple extraction...")
+        print("  [Cleaner] Warning: JSON decode failed for [source code], trying REGEX extraction...")
         # Fallback: simple text extraction if it looks like code
-        if "class " in code:
-            print("returning original code")
-            return {"code":code, "packages":[]}
-        print("returning error")
-        return {"code":"# Error parsing test case JSON","packages": []}
+        data = extract_json_regex(code, {"packages": "list", "content": "string", "suffix": "string", "filename": "string"})
 
-    if isinstance(data, dict):
-        data = [data]
-        
-    extracted_code = ""
-    packages = []
+
     if isinstance(data, list):
-        for obj in data:
-            if obj.get("suffix") == "py":
-                packages += obj.get("packages", [])
-                obj_code = obj.get("content", "")
-                obj_code = remove_trailing_slash(obj_code)
-                extracted_code += obj_code + "\n\n"
+        data = data[0]
+
+    assert data["content"]
+    assert data["filename"]
+    if isinstance(data, dict):
+        data["content"] = remove_trailing_slash(data["content"])
     
-    return {"code": extracted_code.strip(),
-            "packages": packages}
+    return data
 
 
 
@@ -189,23 +229,23 @@ def cleaner_test_case(llm_output: str) -> str:
         # (Simplified here to just look for content pattern as the regex in YAML was complex)
         # However, for robustness, let's assume the LLM follows instructions reasonably well
         # or that we can fix simple JSON errors.
-        print("  [Cleaner] Warning: JSON decode failed for testcase, trying simple extraction...")
+        print("  [Cleaner] Warning: JSON decode failed for testcase, trying REGEX extraction...")
         # Fallback: simple text extraction if it looks like code
-        if "class " in code and "unittest" in code:
-            return code
-        return "# Error parsing test case JSON"
-
-    if isinstance(data, dict):
-        data = [data]
         
+        data = extract_json_regex(code, {"content": "string", "suffix": "string", "filename": "string"})
+
+
     if isinstance(data, list):
-        for obj in data:
-            if obj.get("suffix") == "py":
-                obj_code = obj.get("content", "")
-                obj_code = remove_trailing_slash(obj_code)
-                extracted_code += obj_code + "\n\n"
+        data = data[0]
+
+    assert data["content"]
+    assert data["filename"]
+    if isinstance(data, dict):
+        data["content"] = remove_trailing_slash(data["content"])
     
-    return extracted_code.strip()
+    return data
+
+
 
 def cleaner_debug_agent(llm_output: str) -> Dict[str, str]:
     """Logic from 'Code Cleaner' (Node 1766771232701) handling Debugger output."""
@@ -239,7 +279,7 @@ def cleaner_debug_agent(llm_output: str) -> Dict[str, str]:
 # Tool: Code Execution (Subprocess)
 # ============================================================================
 
-def execute_code(source_code: dict, test_code: str) -> Dict[str, Any]:
+def execute_code(source_code: dict, test_code: dict) -> Dict[str, Any]:
     """
     Simulates the Vercel Code Runner.
     Writes code to temp files and runs unittest.
@@ -256,20 +296,20 @@ def execute_code(source_code: dict, test_code: str) -> Dict[str, Any]:
             install_cmd = f"pip install {package_str}"
             sandbox.commands.run(install_cmd, timeout=120)
 
-        sandbox.files.write("main.py", source_code["code"])
-        print("✅ 文件 main.py 已写入沙箱")
+        filename = source_code["filename"]
+        sandbox.files.write(filename, source_code["content"])
+        print(f"✅ 文件 {filename} 已写入沙箱")
 
-        test_file_content = "import unittest\nfrom main import *\n\n" + test_code
+        test_filename = test_code["filename"]
+        test_file_content = f"import unittest\nfrom {filename.split('.')[0]} import *\n\n" + test_code["content"]
+        sandbox.files.write(test_filename, test_file_content)
+        print(f"✅ 文件 {test_filename} 已写入沙箱")
 
-        sandbox.files.write("test.py", test_file_content)
-        print("✅ 文件 test.py 已写入沙箱")
-
-        # proc = sandbox.commands.run("python test.py")
 
         # 3. 执行代码 (替代 subprocess 的部分)
         # 注意：timeout 参数直接在这里设置，单位是秒
         try:
-            proc = sandbox.commands.run("python -m unittest test.py", timeout=30)
+            proc = sandbox.commands.run(f"python -m unittest {test_filename}", timeout=30)
             
             # E2B 的 proc 对象直接提供了 exit_code, stdout, stderr
             is_pass = proc.exit_code == 0
@@ -357,7 +397,7 @@ def main():
 
     # 3. Testcase Agent
     print("🧪 [Testcase Agent] Generating tests...")
-    test_user_prompt = f"**User Story**: {user_story}\n**Source Code**: {current_code['code']}"
+    test_user_prompt = f"**User Story**: {user_story}\n**Source Code**: {current_code['content']}"
     test_response = call_llm(PROMPT_TESTCASE_SYSTEM, test_user_prompt)
     with open("test.txt", "w", encoding="utf-8") as f:
         f.write(test_response)
@@ -377,8 +417,12 @@ def main():
         exec_result = execute_code(current_code, current_testcase)
         is_pass, error_log = qa_judge(exec_result)
         
+        
+
         if is_pass:
             print("🎉 [QA Judge] Tests Passed!")
+            print(exec_result)
+
             break
         else:
             print("❌ [QA Judge] Tests Failed.")
@@ -392,8 +436,8 @@ def main():
             # 5. Debug Agent
             print("🔧 [Debug Agent] Analyzing failure...")
             debug_prompt = (
-                f"**Source Code**: {current_code['code']}\n\n"
-                f"**Test Case**: {current_testcase}\n\n"
+                f"**Source Code**: {current_code['content']}\n\n"
+                f"**Test Case**: {current_testcase['content']}\n\n"
                 f"**User Story**: {user_story}\n\n"
                 f"**Execution Output**: {error_log}\n"
             )
@@ -408,10 +452,10 @@ def main():
             
             if target == "SOURCE":
                 print("🛠️  Fixing Source Code...")
-                current_code = {"code":content, "packages": current_code["packages"]}
+                current_code["content"] = content #, "packages": current_code["packages"]}
             elif target == "TEST":
                 print("🛠️  Fixing Test Case...")
-                current_testcase = content
+                current_testcase["content"] = content
             else:
                 print("⚠️ Debug Agent returned unknown target. Stopping.")
                 break
@@ -421,9 +465,11 @@ def main():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    filename = current_code["filename"]
+    test_filename = current_testcase["filename"]
 
-    final_main_path = os.path.join(output_dir, "main.py")
-    final_test_path = os.path.join(output_dir, "test_generated.py")
+    final_main_path = os.path.join(output_dir, filename)
+    final_test_path = os.path.join(output_dir, test_filename)
 
     if current_code['packages']:
         print("Writing requirements.txt")
@@ -433,10 +479,10 @@ def main():
 
 
     with open(final_main_path, "w", encoding="utf-8") as f:
-        f.write(current_code["code"])
+        f.write(current_code["content"])
         
     with open(final_test_path, "w", encoding="utf-8") as f:
-        f.write(f"import unittest\nfrom main import *\n\n{current_testcase}")
+        f.write(f"import unittest\nfrom {filename.split('.')[0]} import *\n\n{current_testcase['content']}")
         
     print("\n✨ Process Completed!")
     print(f"📂 Final Code: {final_main_path}")
