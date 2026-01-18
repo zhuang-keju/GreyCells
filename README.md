@@ -6,9 +6,12 @@
 ## 核心特性
 
 *   **多 Agent 协作**：完全复刻了 `CodingAgent.yml` 中的产品经理、程序员、测试工程师、Debug 专家流程。
+*   Property Based Testing + debug agent arbitrator
+*   Markdown extractor
 *   **自修正循环**：包含真实的 Python 代码执行环境，如果测试失败，Debug Agent 会自动分析错误并修正源码或测试用例。
 *   **零外部依赖**：仅使用 Python 标准库（`urllib`, `subprocess`, `json`, `re` 等），无需 `pip install` 任何第三方包。
 *   **真实 LLM 调用**：直接通过 REST API 调用 Google Gemini 模型。
+
 
 ## 环境要求
 
