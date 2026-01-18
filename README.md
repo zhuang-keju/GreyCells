@@ -44,6 +44,48 @@ $env:LLM_MODEL="gemini-2.0-flash"
 python coding_agent.py "写一个贪吃蛇游戏，使用命令行界面，WASD控制"
 ```
 
+
+
+# 🚀 Key Upgrades & Architecture Evolution
+1. The "Sidecar" Protocol (核心通信协议升级)
+From JSON to Markdown: 彻底摒弃了将代码包裹在 JSON 字符串中的旧模式，解决了转义符灾难（Escaping Hell）和多行字符串兼容性问题。
+
+Structured Output: 建立了统一的三段式输出标准：
+
+## Reasoning: 自然语言思维链（CoT）。
+
+## Content: 纯净的代码块（Python Code）。
+
+## Metadata: 结构化的元数据（JSON）。
+
+2. Agent Capabilities (智能体能力增强)
+QA Agent (Testcase):
+
+Property-Based Testing (PBT): 引入 80% 随机属性测试 + 20% Happy Path 的测试策略，而非简单的硬编码断言。
+
+Debuggability Mandate: 强制要求断言失败时打印输入参数（e.g., f"Failed on input: {x}"），为 Debug Agent 提供关键线索。
+
+Anti-Hallucination: Prompt 使用“通用逻辑示例”而非“业务相关示例”，防止模型对 Few-Shot 样本过拟合。
+
+Arbiter Agent (Debugger):
+
+Parallel Fix Strategy: 支持 SOURCE, TEST, BOTH 三种修复模式，可同时修改源码和测试以解决 API 契约不匹配问题。
+
+Truth Hierarchy: 确立了 User Story > Logic > Test 的仲裁优先级，防止为了通过测试而修改正确的需求逻辑。
+
+3. Robust Infrastructure (鲁棒性基础设施)
+AST-Based Parsing: 引入 markdown-it-py 替代正则表达式，基于抽象语法树（AST）精准提取代码块，无视缩进和换行干扰。
+
+Schema-Driven Extraction: 实现了通用的解析器，通过传入 Schema 配置（如 Target_file vs Content）即可适配所有 Agent。
+
+Fault Tolerance (Anti-Fragile):
+
+Wrapper Peeling: 自动识别并剥离 LLM 多此一举添加的 ```markdown 外壳。
+
+Auto-Completion: 自动修复未闭合的代码块（Unclosed Fences）和丢失的 Metadata。
+
+Greedy Header Match: 模糊匹配标题逻辑，能够处理 ## Target: SOURCE 这种同行内容提取。
+
 ### 3. 查看输出
 
 程序运行结束后，最终生成的代码将保存在 `output/` 目录下：
