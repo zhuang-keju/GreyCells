@@ -1,2 +1,3 @@
 python-dotenv
 e2b
+markdown-it-py
