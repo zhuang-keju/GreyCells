@@ -1,33 +1,79 @@
 
-# Coding Agent
+# GreyCells Coding Agent
 
-这是一个基于 Dify Workflow 设计的硬编码 Coding Agent。它通过多 Agent 协作循环（PM -> Coder -> Tester -> Executor -> Debugger）来自动生成高质量的 Python 代码。
+A multi agent collaboration loop (PM -> Coder -> Tester -> Executor -> Debugger(Testcase + Source) ) to automatically generate high quality python code. Just like `Hercule Poirot`'s little grey cells, our GreyCells Coding Agent uses its little grey circuits to think through the problem.
 
-## 核心特性
+## Core Features
 
-*   **多 Agent 协作**：完全复刻了 `CodingAgent.yml` 中的产品经理、程序员、测试工程师、Debug 专家流程。
-*   Property Based Testing + debug agent arbitrator
-*   Markdown extractor
-*   **自修正循环**：包含真实的 Python 代码执行环境，如果测试失败，Debug Agent 会自动分析错误并修正源码或测试用例。
-*   **零外部依赖**：仅使用 Python 标准库（`urllib`, `subprocess`, `json`, `re` 等），无需 `pip install` 任何第三方包。
-*   **真实 LLM 调用**：直接通过 REST API 调用 Google Gemini 模型。
+*   **Multi Agent Collaboration**: Completely replicated the Project manager, programmer/coder, test engineer, debug expert workflow in development processes.
+
+*   **Property Based Testing**: 20% happy path + 80% random path, do not assert answer, but checks property.
+*   **Markdown**:
+    * LLM generates markdown structure, contains reasoning and output code. The markdown structure is parsed using markdown-it-py in lieu of regex to extract JSON fields.
+    * The Abstract Semantic Tree (AST) can accurately extract code blocks, regardless of indentation and new line characters (disasterous for JSON output).
+
+    * Avoided using JSON for final output, because it may suffer from the `Escaping Hell` problem, in the case of multiline strings.
 
 
-## 环境要求
+* **Schema-Driven Extraction**: Implemented a universal extractor, by passing a Schema such as Target_file vs Content, it can be adapted to the output of all agents.
+
+
+* **Fault Tolerance (Anti-Fragile)**:
+
+    * Wrapper Peeling: automatically identify and "peal off" the ```markdown block the LLM may automatically add.
+
+    * Auto-Completion: repair unclosed fences and lost Metadata.
+
+    * Greedy Header Match: fuzzy match, to handle cases such as `## Target: SOURCE`, where the header and the word "SOURCE" is treated as a single header.
+
+
+
+
+
+* **Structured Output**: The following standard is used for the testcase and initial coder.
+    ```markdown
+    ## Reasoning: Natural language chain of thoughts (CoT)
+
+    ## Content: Python Code.
+
+    ## Metadata: file metadata in the form of JSON.
+    ```
+    The following standard is used for the Debug agent:
+
+    ```markdown
+    ## Reasoning: Natural language chain of thoughts (CoT)
+
+    ## Decision: FIX or REMAIN/VETO
+
+    ## Content: Python Code.
+    ```
+
+
+*   **Self-correcting loop**: Real `python` code execution environment using `E2B`. If the testcase fails, the Debug Agent will automatically analyze the error and correct the source code AND/OR the testcase.
+* **Solution to the `Oracle Problem`**:
+    If the testcase itself is wrong, the LLM may chose to fix the source code to satisfy the wrong testcase.
+    Solution: in debugging loop, fix the `Testcase` first, then run the original code with the new testcase again.
+    If the testcase still fails, fix the `Source`.
+*   **Dependencies**: LLM generates file metadata, including dependencies.
+*   **LLM Call**: Use REST API to call `Google Gemini` model.
+
+
+## Environment
 
 *   Python 3.10+
 *   Google Gemini API Key
+* E2B API key
 
-## 快速开始
+## Quick Start
 
-### 1. 设置环境变量
+### 1. Set Environment Variables
 
-你需要设置以下环境变量来配置 LLM。
+Configure the following environment variables to call the LLM. Either put the following keys in the .env file, let the python code load the .env file, or run the commands below.
 
 **macOS / Linux:**
 ```bash
 export LLM_API_KEY="your_google_gemini_api_key"
-export LLM_MODEL="gemini-2.0-flash"  # 可选，默认使用 gemini-2.0-flash
+export LLM_MODEL="gemini-2.0-flash"  # default is gemini-2.0-flash
 ```
 
 **Windows (PowerShell):**
@@ -36,59 +82,38 @@ $env:LLM_API_KEY="your_google_gemini_api_key"
 $env:LLM_MODEL="gemini-2.0-flash"
 ```
 
-### 2. 运行程序
+### 2. Run
 
-直接运行 `coding_agent.py` 并传入你的自然语言需求：
+Run `coding_agent.py` with your natural language requirement.
 
 ```bash
 python coding_agent.py "写一个贪吃蛇游戏，使用命令行界面，WASD控制"
 ```
+### 3. Check Output
+
+After the program finishes, the results are in the `output/` directory. The actual names may differ
+
+*   `output/main.py`: final runnable code
+*   `output/test_generated.py`: final testcase
 
 
 
-# 🚀 Key Upgrades & Architecture Evolution
-1. The "Sidecar" Protocol (核心通信协议升级)
-From JSON to Markdown: 彻底摒弃了将代码包裹在 JSON 字符串中的旧模式，解决了转义符灾难（Escaping Hell）和多行字符串兼容性问题。
+## 🚀 Architecture
 
-Structured Output: 建立了统一的三段式输出标准：
+### Testcase Agent:
 
-## Reasoning: 自然语言思维链（CoT）。
+Property-Based Testing (PBT): 80% random property test + 20% Happy Path, instead of hard coding assertions (even with no mental math, hard coded assertions tends to fail).
 
-## Content: 纯净的代码块（Python Code）。
+Debuggability Mandate: Enforce that when the assertion fails, the testcase prints the input parameters (e.g., f"Failed on input: {x}"), to provide critical clues to the Debug Agent.
 
-## Metadata: 结构化的元数据（JSON）。
+Anti-Hallucination: Prompt uses universal logical examples instead of feature specific examples, preventing the model to overfit on the Few-Shot samples.
 
-2. Agent Capabilities (智能体能力增强)
-QA Agent (Testcase):
+### Debug Agent (Testcase):
 
-Property-Based Testing (PBT): 引入 80% 随机属性测试 + 20% Happy Path 的测试策略，而非简单的硬编码断言。
+Firstly fix the testcase if the testcase objectively violates the `User Story`. Truth Hierarchy: User Story > Logic > Test, to prevent the agent to change the testcase just to make the source code pass it.
 
-Debuggability Mandate: 强制要求断言失败时打印输入参数（e.g., f"Failed on input: {x}"），为 Debug Agent 提供关键线索。
 
-Anti-Hallucination: Prompt 使用“通用逻辑示例”而非“业务相关示例”，防止模型对 Few-Shot 样本过拟合。
+### Debug Agent (Source):
+After the testcase fix did not result in a pass, the source is checked against the `UserStory`, `Testcase`, `Source Code` and `Execution Log`. Fix if only the source code objectively violates the `User Story`, or fails the testcase and it is the problem with the source code. Truth Hierarchy: User Story > Logic > Source, to prevent the agent to change the source code just to pass the testcase (a practical risk, because testcases are presented directly to the agent). Since PBT testcase has inherent randomness, the source code cannot hard code values to pass the testcase.
 
-Arbiter Agent (Debugger):
 
-Parallel Fix Strategy: 支持 SOURCE, TEST, BOTH 三种修复模式，可同时修改源码和测试以解决 API 契约不匹配问题。
-
-Truth Hierarchy: 确立了 User Story > Logic > Test 的仲裁优先级，防止为了通过测试而修改正确的需求逻辑。
-
-3. Robust Infrastructure (鲁棒性基础设施)
-AST-Based Parsing: 引入 markdown-it-py 替代正则表达式，基于抽象语法树（AST）精准提取代码块，无视缩进和换行干扰。
-
-Schema-Driven Extraction: 实现了通用的解析器，通过传入 Schema 配置（如 Target_file vs Content）即可适配所有 Agent。
-
-Fault Tolerance (Anti-Fragile):
-
-Wrapper Peeling: 自动识别并剥离 LLM 多此一举添加的 ```markdown 外壳。
-
-Auto-Completion: 自动修复未闭合的代码块（Unclosed Fences）和丢失的 Metadata。
-
-Greedy Header Match: 模糊匹配标题逻辑，能够处理 ## Target: SOURCE 这种同行内容提取。
-
-### 3. 查看输出
-
-程序运行结束后，最终生成的代码将保存在 `output/` 目录下：
-
-*   `output/main.py`: 最终的业务代码
-*   `output/test_generated.py`: 最终通过的测试用例
