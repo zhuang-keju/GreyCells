@@ -117,3 +117,57 @@ Firstly fix the testcase if the testcase objectively violates the `User Story`. 
 After the testcase fix did not result in a pass, the source is checked against the `UserStory`, `Testcase`, `Source Code` and `Execution Log`. Fix if only the source code objectively violates the `User Story`, or fails the testcase and it is the problem with the source code. Truth Hierarchy: User Story > Logic > Source, to prevent the agent to change the source code just to pass the testcase (a practical risk, because testcases are presented directly to the agent). Since PBT testcase has inherent randomness, the source code cannot hard code values to pass the testcase.
 
 
+## Workflow
+```mermaid
+
+flowchart TD
+    %% ---  ---
+    classDef pm fill:#e1bee7,stroke:#4a148c,stroke-width:2px,color:#000
+    classDef coder fill:#bbdefb,stroke:#0d47a1,stroke-width:2px,color:#000
+    classDef tester fill:#ffecb3,stroke:#ff6f00,stroke-width:2px,color:#000
+    classDef sandbox fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    classDef reviewer fill:#f0f4c3,stroke:#827717,stroke-width:2px,color:#000
+    classDef endstate fill:#f5f5f5,stroke:#333,stroke-width:2px,color:#000
+
+    %% --- Phase 1:  (Linear Setup) ---
+    subgraph Phase1 ["Phase 1: Initialization"]
+        direction TB
+        Start((Start)) --> PMAgent
+        
+        PMAgent[("🧠 PM Agent<br/>(Analyze Reqs & Plan)")]:::pm
+        PMAgent -->|Design Docs| CodingAgent
+        
+        CodingAgent[("👨‍💻 Coding Agent<br/>(Write Initial Code)")]:::coder
+        CodingAgent -->|Source Code| TestcaseAgent
+        
+        TestcaseAgent[("🧪 Testcase Agent<br/>(Write Initial Tests)")]:::tester
+    end
+
+    %% --- Phase 2:  (The Loop) ---
+    subgraph Phase2 ["Phase 2: Execution & Debug Loop"]
+        direction TB
+        
+        TestcaseAgent --> Execution
+        
+        Execution["⚙️ Executor (Sandbox)<br/>(Run Code + Tests)"]:::sandbox
+        Execution -->|Logs/Errors| Reviewer
+        
+        Reviewer[("🧐 Reviewer Agent<br/>(Analyze Failure Root Cause)")]:::reviewer
+        Reviewer --> Decision{Pass?}
+        
+        %% 分支逻辑
+        Decision -- "✅ All Pass" --> Success[Save Artifacts]:::endstate
+        
+        Decision -- "❌ Test Logic Error" --> FixTest[("🔧 Fix Testcase
+        (step 1)")]:::tester
+        Decision -- "❌ Source Logic Error" --> FixCode[("🔧 Fix Source Code
+        (step 2)")]:::coder
+        
+        %% 闭环
+        FixTest -->|Updated Tests| Execution
+        FixCode -->|Updated Code| Execution
+    end
+
+    Success --> End((End))
+
+```
